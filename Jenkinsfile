@@ -1,23 +1,30 @@
-node('built-in') 
-{
-    stage('Continuous Download') 
-	{
-    git 'https://github.com/sunildevops77/maven.git'
-	}
-    stage('Continuous Build') 
-	{
-    sh label: '', script: 'mvn package'
-	}
-    stage('Continuous Deployment') 
-	{
-sh label: '', script: 'scp /home/ubuntu/.jenkins/workspace/ScriptedPipeline/webapp/target/webapp.war   ubuntu@172.31.26.217:/var/lib/tomcat8/webapps/qaenv.war'
-	}
-    stage('Continuous Testing') 
-	{
-              sh label: '', script: 'echo "Testing Passed"'
-	}
-    stage('Continuous Delivery') 
-	{
-sh label: '', script: 'scp /home/ubuntu/.jenkins/workspace/ScriptedPipeline/webapp/target/webapp.war   ubuntu@172.31.22.88:/var/lib/tomcat8/webapps/prodenv.war'
-	}
+pipeline {
+    agent any
+    parameters{
+        choice(name: 'VERSION',choices: ['1.1.0','1.2.0','1.3.0'],description: '')
+        booleanParam(name: 'executeTests',defaultValue: 'true',description: '')
+    }
+    stages {
+        stage('build') {
+            steps {
+                echo 'bulding the application'
+            }
+        }
+        stage('test'){
+            when{
+                expression{
+                    params.executeTests
+                }
+            }
+            steps{
+                echo 'testing the application'
+            }
+        }
+        stage('deploy'){
+            steps{
+                echo 'deploying the application'
+                echo "deploying version ${params.VERSION}"
+            }    
+        }        
+    }
 }
